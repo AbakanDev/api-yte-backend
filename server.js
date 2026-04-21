@@ -83,9 +83,14 @@ app.get('/api/dashboard', async (req, res) => {
 
         // 3. Tổng ca bệnh
         const qTongCa = `
-            SELECT COUNT(DISTINCT MaNguoiDung) AS count 
-            FROM GHINHANTRANGTHAI 
-            WHERE MaTrangThai = (4, 5)
+            SELECT COUNT(*) AS count 
+            FROM GHINHANTRANGTHAI g1 
+            WHERE MaTrangThai IN (4, 5)
+            AND NgayCapNhat = (
+                SELECT MAX(NgayCapNhat) 
+                FROM GHINHANTRANGTHAI g2 
+                WHERE g1.MaNguoiDung = g2.MaNguoiDung
+            )
         `;
 
         // 4. Số vùng dịch đang hoạt động
