@@ -85,7 +85,7 @@ app.get('/api/dashboard', async (req, res) => {
         const qTongCa = `
             SELECT COUNT(DISTINCT MaNguoiDung) AS count 
             FROM GHINHANTRANGTHAI 
-            WHERE MaTrangThai = 4
+            WHERE MaTrangThai = (4, 5)
         `;
 
         // 4. Số vùng dịch đang hoạt động
