@@ -114,6 +114,7 @@ app.get('/api/dashboard', async (req, res) => {
             connection.query(qVungDich)
         ]);
 
+
         // Nhớ đóng kết nối Aiven
         await connection.end();
 
@@ -133,7 +134,50 @@ app.get('/api/dashboard', async (req, res) => {
         res.status(500).json({ success: false, message: 'Lỗi server khi tải dữ liệu Dashboard' });
     }
 });
+// --- API HEALTH ---
+app.get('/api/health/:userId', async (req, res) => {
+    const userId = req.params.userId;
+
+    try {
+        const connection = await mysql.createConnection(dbConfig);
+
+        // Lấy trạng thái bệnh mới nhất
+        const [healthRows] = await connection.execute(`
+            SELECT ttb.TenTrangThai, ttb.MoTa
+            FROM GHINHANTRANGTHAI g
+            JOIN TRANGTHAIBENH ttb ON g.MaTrangThai = ttb.MaTrangThai
+            WHERE g.MaNguoiDung = ?
+            ORDER BY g.NgayCapNhat DESC
+            LIMIT 1
+        `, [userId]);
+
+        await connection.end();
+
+        const health = healthRows[0] || {};
+
+        res.json({
+            success: true,
+            message: "OK",
+            data: {
+                healthStatus: health.TenTrangThai || "Khỏe mạnh",
+                symptomNote: health.MoTa || "Không có triệu chứng",
+                vaccineDoses: 3,
+                latestTestType: "RT-PCR",
+                latestTestResult: "Âm tính",
+                nextVaccineNote: "Dự kiến tiêm tháng 8/2026",
+                recommendations: ["Đeo khẩu trang khi ra ngoài"]
+            }
+        });
+
+    } catch (error) {
+        console.error("Lỗi health API:", error);
+        res.status(500).json({
+            success: false,
+            message: "Lỗi server"
+        });
+    }
+});
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`🚀 Server đang chạy tại http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Server đang chạy tại http://0.0.0.0:${PORT}`);
 });
